@@ -1,6 +1,6 @@
 # Prism Atelier
 
-A two-artisan competition to build a celestial workshop and earn prestige.
+A four-artisan competition by default (with smaller optional tables) to build a celestial workshop and earn prestige.
 
 ## Language
 

@@ -125,7 +125,16 @@
     }
     return a;
   }
-  function create(seed = Date.now(), first = 0) {
+  const playerName = (seat) => ["You", "Aster", "Lumen", "Vesper"][seat];
+  const supplyFor = (count) => ({ 2: 4, 3: 5, 4: 7 })[count];
+  function create(seed = Date.now(), first = 0, count = 4) {
+    if (
+      ![2, 3, 4].includes(count) ||
+      !Number.isInteger(first) ||
+      first < 0 ||
+      first >= count
+    )
+      throw Error("Invalid table size or first seat.");
     const r = rng(seed),
       decks = [1, 2, 3].map((t) =>
         shuffle(
@@ -134,14 +143,14 @@
         ),
       );
     return {
-      version: 1,
+      version: 2,
       seed,
       first,
       current: first,
       turn: 0,
       phase: "action",
       final: false,
-      players: [0, 1].map(() => ({
+      players: Array.from({ length: count }, () => ({
         tokens: bag(),
         bonuses: bag(),
         owned: [],
@@ -149,13 +158,92 @@
         patrons: [],
         score: 0,
       })),
-      bank: { ...bag(4), gold: 5 },
+      bank: { ...bag(supplyFor(count)), gold: 5 },
       market: decks.map((d) => d.splice(0, 4)),
       decks,
-      patrons: shuffle(patrons, r).slice(0, 3),
+      patrons: shuffle(patrons, r).slice(0, count + 1),
       log: ["The atelier opens. First to 15 prestige starts the final round."],
       winners: [],
     };
+  }
+  // Old matches keep their original seat count and economy. Never insert players mid-match.
+  function restore(saved) {
+    try {
+      if (
+        !saved ||
+        ![1, 2].includes(saved.version) ||
+        !Array.isArray(saved.players)
+      )
+        return null;
+      const count = saved.players.length;
+      if (![2, 3, 4].includes(count) || (saved.version === 1 && count !== 2))
+        return null;
+      if (
+        ![saved.first, saved.current].every(
+          (i) => Number.isInteger(i) && i >= 0 && i < count,
+        )
+      )
+        return null;
+      if (
+        !Number.isInteger(saved.turn) ||
+        saved.turn < 0 ||
+        typeof saved.final !== "boolean" ||
+        !["action", "return", "noble", "done"].includes(saved.phase)
+      )
+        return null;
+      const validBag = (b) =>
+        b && keys.every((k) => Number.isInteger(b[k]) && b[k] >= 0);
+      const validCard = (c) =>
+        c &&
+        typeof c.id === "string" &&
+        typeof c.name === "string" &&
+        colors.includes(c.color) &&
+        [1, 2, 3].includes(c.tier) &&
+        Number.isInteger(c.points) &&
+        c.points >= 0 &&
+        validBag(c.cost);
+      if (
+        !validBag(saved.bank) ||
+        !Array.isArray(saved.decks) ||
+        saved.decks.length !== 3 ||
+        !Array.isArray(saved.market) ||
+        saved.market.length !== 3
+      )
+        return null;
+      if (
+        ![...saved.decks, ...saved.market].every(
+          (row) => Array.isArray(row) && row.every(validCard),
+        )
+      )
+        return null;
+      if (
+        !saved.players.every(
+          (p) =>
+            validBag(p.tokens) &&
+            validBag(p.bonuses) &&
+            Number.isInteger(p.score) &&
+            p.score >= 0 &&
+            Array.isArray(p.owned) &&
+            p.owned.every(validCard) &&
+            Array.isArray(p.reserved) &&
+            p.reserved.length <= 3 &&
+            p.reserved.every(validCard) &&
+            Array.isArray(p.patrons),
+        )
+      )
+        return null;
+      if (
+        !Array.isArray(saved.patrons) ||
+        !Array.isArray(saved.log) ||
+        !saved.log.every((x) => typeof x === "string") ||
+        !Array.isArray(saved.winners) ||
+        !saved.winners.every((i) => Number.isInteger(i) && i >= 0 && i < count)
+      )
+        return null;
+      return { ...structuredClone(saved), version: 2 };
+    } catch {
+      return null;
+    }
   }
   function view(s, p = s.current) {
     return {
@@ -231,7 +319,8 @@
     const p = s.players[s.current];
     if (p.score >= 15) s.final = true;
     s.turn++;
-    if (s.final && s.current !== s.first) {
+    const next = (s.current + 1) % s.players.length;
+    if (s.final && next === s.first) {
       s.phase = "done";
       const high = Math.max(...s.players.map((p) => p.score));
       const tied = s.players
@@ -244,7 +333,7 @@
       s.log.unshift("The final round is complete.");
       return;
     }
-    s.current = 1 - s.current;
+    s.current = next;
     s.phase = "action";
   }
   function settle(s) {
@@ -291,9 +380,7 @@
       s.patrons = s.patrons.filter((x) => x.id !== n.id);
       p.patrons.push(n);
       p.score += 3;
-      s.log.unshift(
-        `${s.current ? "Automaton" : "You"} welcomed ${n.name} (+3).`,
-      );
+      s.log.unshift(`${playerName(s.current)} welcomed ${n.name} (+3).`);
       finish(s);
       return s;
     }
@@ -307,7 +394,7 @@
       )
     )
       fail();
-    const who = s.current ? "Automaton" : "You";
+    const who = playerName(s.current);
     if (a.type === "take") {
       a.colors.forEach((k) => {
         s.bank[k]--;
@@ -471,6 +558,9 @@
     cards,
     patrons,
     create,
+    restore,
+    playerName,
+    supplyFor,
     view,
     due,
     payment,

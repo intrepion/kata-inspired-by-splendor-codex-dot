@@ -33,7 +33,11 @@
     returns = E.bag(),
     timer = null,
     epoch = 0;
-  const storage = "prism-atelier-v1";
+  // Keep the key so existing two-player saves can be upgraded without losing progress.
+  const testing = new URLSearchParams(location.search).has("test");
+  const storage = testing ? "prism-atelier-test-v1" : "prism-atelier-v1";
+  const seatName = (seat) =>
+    seat === 0 ? "Your atelier" : `${E.playerName(seat)} · Automaton ${seat}`;
   function gem(k, n = "") {
     return `<span class="gem" style="--gem:${palette[k]}" aria-hidden="true">${n || symbols[k]}</span>`;
   }
@@ -90,17 +94,27 @@
     $("players").innerHTML = state.players
       .map(
         (p, i) =>
-          `<article class="player ${state.current === i && state.phase !== "done" ? "active" : ""}"><div><h2>${i ? "The Automaton" : "Your atelier"} ${state.first === i ? "♧" : ""}</h2><span class="sub">${state.first === i ? "FIRST ARTISAN · " : ""}${p.owned.length} PLANS · ${p.reserved.length}/3 RESERVED · ${E.total(p.tokens)}/10 TOKENS</span></div><div class="score">${p.score}<small> / 15</small></div><div class="holdings" aria-label="Tokens and permanent discounts">${E.keys.map((k) => `<span class="chip" title="${labels[k]}: ${p.tokens[k]} tokens${k !== "gold" ? `, ${p.bonuses[k]} permanent discounts` : ""}">${gem(k)}${p.tokens[k]}${k !== "gold" ? `<small>+${p.bonuses[k]} craft</small>` : ""}</span>`).join("")}</div>${i && p.reserved.length ? `<div class="sub" style="grid-column:1/-1">RESERVES: ${p.reserved.map((c) => (c.public ? c.name : `Hidden tier ${c.tier}`)).join(" · ")}</div>` : ""}</article>`,
+          `<article class="player ${state.current === i && state.phase !== "done" ? "active" : ""}"><div><h2>${seatName(i)} ${state.first === i ? "♧" : ""}</h2><span class="sub">${state.first === i ? "FIRST ARTISAN · " : ""}${p.owned.length} PLANS · ${p.reserved.length}/3 RESERVED · ${E.total(p.tokens)}/10 TOKENS</span></div><div class="score">${p.score}<small> / 15</small></div><div class="holdings" aria-label="Tokens and permanent discounts">${E.keys.map((k) => `<span class="chip" title="${labels[k]}: ${p.tokens[k]} tokens${k !== "gold" ? `, ${p.bonuses[k]} permanent discounts` : ""}">${gem(k)}${p.tokens[k]}${k !== "gold" ? `<small>+${p.bonuses[k]} craft</small>` : ""}</span>`).join("")}</div>${i && p.reserved.length ? `<div class="sub" style="grid-column:1/-1">RESERVES: ${p.reserved.map((c) => (c.public ? c.name : `Hidden tier ${c.tier}`)).join(" · ")}</div>` : ""}</article>`,
+      )
+      .join("");
+    const order = Array.from(
+      { length: state.players.length },
+      (_, n) => (state.first + n) % state.players.length,
+    );
+    $("turn-order").innerHTML = order
+      .map(
+        (seat) =>
+          `<li ${state.current === seat && state.phase !== "done" ? 'aria-current="step"' : ""}>${E.playerName(seat)}${seat === state.first ? " ♧" : ""}</li>`,
       )
       .join("");
     const done = state.phase === "done";
     $("phase-label").textContent = done
       ? "EXHIBITION COMPLETE"
-      : `${state.current ? "AUTOMATON’S" : "YOUR"} TURN${state.final ? " · FINAL ROUND" : ""}`;
+      : `${state.current ? E.playerName(state.current).toUpperCase() + "’S" : "YOUR"} TURN${state.final ? " · FINAL ROUND" : ""}`;
     $("status").textContent = done
       ? "The stars have their favorite."
       : state.current
-        ? "The Automaton is considering…"
+        ? `${E.playerName(state.current)} is considering…`
         : state.phase === "return"
           ? "Choose tokens to return."
           : state.phase === "noble"
@@ -155,21 +169,21 @@
       .map((x) => `<li>${x}</li>`)
       .join("");
     $("round").textContent =
-      `ROUND ${Math.floor(state.turn / 2) + 1} · ${state.turn} TURNS COMPLETED`;
+      `ROUND ${Math.floor(state.turn / state.players.length) + 1} · ${state.turn} TURNS COMPLETED`;
     $("hint").disabled = !isHuman();
     $("outcome").hidden = !done;
     if (done) {
       $("result-title").textContent =
-        state.winners.length === 2
+        state.winners.length > 1
           ? "A shared constellation."
           : state.winners[0] === 0
             ? "Your masterpiece shines brightest."
-            : "The Automaton takes the exhibition.";
+            : `${E.playerName(state.winners[0])} takes the exhibition.`;
       $("result-detail").textContent =
         state.players
           .map(
             (p, i) =>
-              `${i ? "Automaton" : "You"}: ${p.score} prestige, ${p.owned.length} purchased plans, ${p.patrons.length} patrons`,
+              `${E.playerName(i)}: ${p.score} prestige, ${p.owned.length} purchased plans, ${p.patrons.length} patrons`,
           )
           .join(" · ") +
         ". Equal prestige is decided by fewer purchased plans; a further tie is shared.";
@@ -192,15 +206,16 @@
   function synchronize() {
     clearTimeout(timer);
     if (!state || state.phase === "done") return;
-    if (state.current === 1) {
-      const token = epoch;
+    if (state.current !== 0) {
+      const token = epoch,
+        seat = state.current;
       timer = setTimeout(() => {
-        if (token !== epoch || !state || state.current !== 1) return;
+        if (token !== epoch || !state || state.current !== seat) return;
         if (document.querySelector("dialog[open]")) {
           synchronize();
           return;
         }
-        advance(E.choose(E.view(state, 1)));
+        advance(E.choose(E.view(state, seat)));
       }, 650);
       return;
     }
@@ -216,11 +231,16 @@
       open("noble-dialog");
     }
   }
-  function start(first = 0, seed = Date.now()) {
+  function start(
+    first = 0,
+    seed = Date.now(),
+    count = Number($("player-count").value),
+  ) {
     epoch++;
     clearTimeout(timer);
     closeAll();
-    state = E.create(seed, first);
+    state = E.create(seed, first, count);
+    $("save-notice").hidden = true;
     selection = [];
     save();
     render();
@@ -316,6 +336,18 @@
       .join("");
     $("confirm-return").disabled = n !== excess;
   }
+  function updateStarters() {
+    const previous = Number($("starter").value),
+      count = Number($("player-count").value);
+    $("starter").innerHTML = Array.from(
+      { length: count },
+      (_, seat) =>
+        `<option value="${seat}">${seat === 0 ? "You start" : E.playerName(seat) + " starts"}</option>`,
+    ).join("");
+    $("starter").value = String(previous < count ? previous : 0);
+  }
+  $("player-count").onchange = updateStarters;
+  updateStarters();
   $("start").onclick = () => start(Number($("starter").value));
   $("help").onclick = () => open("help-dialog");
   $("restart").onclick = () => open("restart-dialog");
@@ -325,6 +357,7 @@
     closeAll();
     state = null;
     selection = [];
+    $("save-notice").hidden = true;
     try {
       localStorage.removeItem(storage);
     } catch {}
@@ -437,29 +470,35 @@
     }
   });
   try {
-    const saved = JSON.parse(localStorage.getItem(storage));
-    if (
-      saved?.version === 1 &&
-      saved.players?.length === 2 &&
-      saved.decks?.length === 3 &&
-      ["action", "return", "noble", "done"].includes(saved.phase)
-    ) {
-      state = saved;
+    const raw = localStorage.getItem(storage),
+      saved = raw ? JSON.parse(raw) : null;
+    state = E.restore(saved);
+    if (raw) {
+      $("save-notice").hidden = false;
+      $("save-notice").textContent = state
+        ? `Resumed your ${state.players.length}-player match. New games default to four players.`
+        : "The saved match could not be restored. Start a fresh atelier below.";
+      if (state) save();
     }
-  } catch {}
+  } catch {
+    $("save-notice").hidden = false;
+    $("save-notice").textContent =
+      "The saved match could not be restored. Start a fresh atelier below.";
+  }
   render();
   synchronize();
   // Browser integration tests use the same transitions and dialogs, never a second rules engine.
-  if (new URLSearchParams(location.search).has("test"))
+  if (testing)
     window.PrismTest = {
       getState: () => structuredClone(state),
-      start: (seed, first = 0) => start(first, seed),
+      start: (seed, first = 0, count = 4) => start(first, seed, count),
       load: (s) => {
         epoch++;
         clearTimeout(timer);
         closeAll();
         state = structuredClone(s);
         selection = [];
+        save();
         render();
         synchronize();
       },

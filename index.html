@@ -40,23 +40,34 @@
           <h2>Your first masterpiece starts here.</h2>
           <p>
             Take gems → buy plans → gain permanent discounts. Attract patrons
-            for 3 prestige each. Outbuild the Automaton in a two-player race.
+            for 3 prestige each. Outbuild Aster, Lumen, and Vesper in a
+            four-player race.
           </p>
         </div>
         <div>
+          <label for="player-count">Table size</label
+          ><select id="player-count">
+            <option value="4" selected>4 players · You + 3 Automata</option>
+            <option value="3">3 players · You + 2 Automata</option>
+            <option value="2">2 players · You + 1 Automaton</option>
+          </select>
           <label for="starter">First turn</label
           ><select id="starter">
             <option value="0">You start</option>
-            <option value="1">Automaton starts</option></select
+            <option value="1">Aster starts</option>
+            <option value="2">Lumen starts</option>
+            <option value="3">Vesper starts</option></select
           ><button class="primary" id="start">Open the atelier →</button>
         </div>
       </section>
+      <p id="save-notice" class="save-notice" role="status" hidden></p>
       <div id="play-area" hidden>
         <section
           class="players"
           id="players"
           aria-label="Artisan standings"
         ></section>
+        <ol id="turn-order" aria-label="Clockwise turn order"></ol>
         <section class="turn-strip">
           <div>
             <p class="eyebrow" id="phase-label">YOUR TURN</p>
@@ -130,7 +141,7 @@
         </section>
       </div>
       <footer>
-        Original art & design · One human, one fair Automaton · No account
+        Original art & design · One human, three fair Automata · No account
         required
       </footer>
     </main>
@@ -171,9 +182,11 @@
         </li>
       </ol>
       <p>
-        Two-player supplies: 4 of each color, 5 gold, 3 patrons. The Automaton
-        knows the public table and its own reserves, never hidden decks or your
-        blind reserves.
+        Four-player supplies: 7 of each color, 5 gold, 5 patrons. Three-player
+        tables use 5 per color and 4 patrons; two-player tables use 4 per color
+        and 3 patrons. Turns follow the displayed clockwise order. Each
+        Automaton knows the public table and its own reserves, never hidden
+        decks or your blind reserves.
       </p>
       <p>
         <b>Controls:</b> tap or click any plan to inspect it. Tab and Enter

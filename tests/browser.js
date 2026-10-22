@@ -1,6 +1,6 @@
 "use strict";
-const frame = document.getElementById("game"),
-  results = document.getElementById("results"),
+let frame = document.getElementById("game");
+const results = document.getElementById("results"),
   wait = (ms) => new Promise((r) => setTimeout(r, ms));
 let count = 0,
   groups = 0;
@@ -12,12 +12,42 @@ document.getElementById("run").onclick = async () => {
   results.replaceChildren();
   count = 0;
   groups = 0;
-  const w = frame.contentWindow,
+  let w = frame.contentWindow,
     d = w.document,
     E = w.Prism,
     T = w.PrismTest,
     $ = (id) => d.getElementById(id),
     click = (id) => $(id).click();
+  const until = async (fn, message) => {
+    const end = Date.now() + 8000;
+    while (Date.now() < end) {
+      try {
+        if (fn()) return;
+      } catch {}
+      await wait(25);
+    }
+    throw Error(message);
+  };
+  async function reload() {
+    const query = "resume=" + Date.now();
+    const fresh = document.createElement("iframe");
+    fresh.id = "game";
+    fresh.title = "Game under test";
+    fresh.src = "../index.html?test=1&" + query;
+    frame.replaceWith(fresh);
+    frame = fresh;
+    await until(
+      () =>
+        frame.contentWindow.location.search.includes(query) &&
+        frame.contentWindow.PrismTest,
+      "Reload ready",
+    );
+    w = frame.contentWindow;
+    d = w.document;
+    E = w.Prism;
+    T = w.PrismTest;
+  }
+
   const test = async (name, fn) => {
     await fn();
     groups++;
@@ -28,8 +58,8 @@ document.getElementById("run").onclick = async () => {
   function stop() {
     T.stop();
   }
-  function start(seed = 1, first = 0) {
-    T.start(seed, first);
+  function start(seed = 1, first = 0, count = 4) {
+    T.start(seed, first, count);
     stop();
   }
   function card(id) {
@@ -65,6 +95,14 @@ document.getElementById("run").onclick = async () => {
   try {
     await test("Handbook, original artwork, legal guidance and cancel without spending turn", async () => {
       start();
+      check(T.getState().players.length === 4, "Four players default");
+      check(
+        d.querySelectorAll(".player").length === 4,
+        "Four visible standings",
+      );
+      check($("turn-order").children.length === 4, "Four-seat turn order");
+      check(T.getState().patrons.length === 5, "Five patrons");
+      check(T.getState().bank.pearl === 7, "Seven tokens per color");
       check(d.querySelectorAll("#market .plan").length === 12, "12 plans");
       check(
         new Set([...d.querySelectorAll("#market svg")].map((x) => x.outerHTML))
@@ -105,8 +143,8 @@ document.getElementById("run").onclick = async () => {
     });
     await test("Complete human-facing games use market, gems, payment, returns and patron controls", async () => {
       for (const seed of [3, 8, 17]) {
-        start(seed);
-        for (let n = 0; n < 400 && T.getState().phase !== "done"; n++) {
+        start(seed, seed % 4);
+        for (let n = 0; n < 600 && T.getState().phase !== "done"; n++) {
           const s = T.getState(),
             a = E.choose(E.view(s, s.current));
           if (s.current === 0) play(a);
@@ -117,6 +155,12 @@ document.getElementById("run").onclick = async () => {
         }
         check(T.getState().phase === "done", "Complete UI game " + seed);
         check(!$("outcome").hidden, "Results visible");
+        check(T.getState().turn % 4 === 0, "Equal turns at game end");
+        for (const name of ["You", "Aster", "Lumen", "Vesper"])
+          check(
+            $("result-detail").textContent.includes(name),
+            "Result lists " + name,
+          );
         const final = T.getState().turn;
         click("take");
         check(T.getState().turn === final, "Terminal input locked");
@@ -142,7 +186,7 @@ document.getElementById("run").onclick = async () => {
       T.load(s);
       check(
         $("noble-dialog").open &&
-          d.querySelectorAll("[data-noble]").length === 3,
+          d.querySelectorAll("[data-noble]").length === 5,
         "Choose among eligible patrons",
       );
       play({ type: "noble", id: E.eligible(T.getState())[2].id });
@@ -170,6 +214,8 @@ document.getElementById("run").onclick = async () => {
       let s = E.create(12);
       s = E.apply(s, { type: "reserve", tier: 1 });
       s = E.apply(s, { type: "reserve", tier: 2 });
+      s = E.apply(s, { type: "reserve", tier: 1 });
+      s = E.apply(s, { type: "reserve", tier: 1 });
       T.load(s);
       stop();
       click("gem-pearl");
@@ -178,7 +224,7 @@ document.getElementById("run").onclick = async () => {
       click("take");
       stop();
       check(
-        T.getState().turn === 3,
+        T.getState().turn === 5,
         "Human action renders while AI holds hidden reserve",
       );
       check(
@@ -198,25 +244,116 @@ document.getElementById("run").onclick = async () => {
         "Pass advances only exhausted-action turn",
       );
     });
-    await test("AI first, modal pause, real scheduled opponent turn, and save/reload", async () => {
+    await test("Three scheduled AIs, modal pause and interrupted/repeated inputs across all seats", async () => {
       T.start(22, 1);
       click("help");
-      await wait(800);
-      check(T.getState().turn === 0, "Handbook pauses opponent");
+      await wait(750);
+      check(T.getState().turn === 0, "Handbook pauses AI");
       $("help-dialog").querySelector("[data-close]").click();
-      await wait(800);
-      check(
-        T.getState().turn === 1 && T.getState().current === 0,
-        "Opponent completes exactly one turn",
+      await until(
+        () => T.getState().current === 0,
+        "Three opponents return turn to human",
       );
+      check(T.getState().turn === 3, "Exactly three AI turns");
+      for (const name of ["Aster", "Lumen", "Vesper"])
+        check(
+          $("journal").textContent.includes(name),
+          name + " has own journal entry",
+        );
+      for (const seat of [1, 2, 3]) {
+        T.start(27, seat);
+        click("restart");
+        click("confirm-restart");
+        click("confirm-restart");
+        await wait(750);
+        check(
+          T.getState() === null,
+          "Interrupted seat " + seat + " cannot mutate new setup",
+        );
+      }
+    });
+    await test("Four-player save/resume at each AI seat and pending human resolutions", async () => {
+      for (const seat of [1, 2, 3]) {
+        const s = E.create(38, seat);
+        T.load(s);
+        stop();
+        await reload();
+        stop();
+        check(
+          T.getState().current === seat && T.getState().players.length === 4,
+          "Restored AI seat " + seat,
+        );
+        check(d.querySelectorAll(".player").length === 4, "Standings restored");
+      }
+      let s = E.create(4);
+      s.players[0].tokens = { ...E.bag(2), gold: 0 };
+      s = E.apply(s, { type: "take", colors: ["pearl", "azure", "jade"] });
+      T.load(s);
       stop();
-      const before = T.getState().turn;
-      frame.src = "../index.html?test=1&resume=" + Date.now();
-      await wait(700);
+      await reload();
+      stop();
+      check($("return-dialog").open, "Required returns restored");
+      play(E.choose(E.view(T.getState())));
+      s = E.create(4);
+      s.players[0].bonuses = E.bag(4);
+      s = E.apply(s, { type: "reserve", tier: 1 });
+      T.load(s);
+      stop();
+      await reload();
+      stop();
+      check($("noble-dialog").open, "Patron choice restored");
+      play(E.choose(E.view(T.getState())));
+      s = E.create(5);
+      s.phase = "done";
+      s.winners = [1, 3];
+      T.load(s);
+      stop();
+      await reload();
+      stop();
       check(
-        frame.contentWindow.PrismTest.getState().turn === before,
-        "Reload resumes saved game",
+        !$("outcome").hidden &&
+          $("result-title").textContent.includes("shared"),
+        "Shared result resumes",
       );
+    });
+    await test("Older two-player saves resume safely and new games still default to four", async () => {
+      let s = E.create(6, 1, 2);
+      s.version = 1;
+      T.load(s);
+      stop();
+      await reload();
+      check(
+        T.getState().version === 2 && T.getState().players.length === 2,
+        "Legacy save migrated without inserting seats",
+      );
+      check(
+        $("save-notice").textContent.includes("2-player"),
+        "Legacy match explained",
+      );
+      await until(() => T.getState().current === 0, "Legacy AI resumes");
+      check(T.getState().turn === 1, "Legacy turn order preserved");
+      click("restart");
+      click("confirm-restart");
+      click("start");
+      stop();
+      check(T.getState().players.length === 4, "Next match defaults to four");
+      click("restart");
+      click("confirm-restart");
+      $("player-count").value = "3";
+      $("player-count").dispatchEvent(new w.Event("change"));
+      $("starter").value = "2";
+      click("start");
+      stop();
+      check(
+        T.getState().players.length === 3 && T.getState().current === 2,
+        "Optional three-player table and starter",
+      );
+      click("restart");
+      click("confirm-restart");
+      $("player-count").value = "4";
+      $("player-count").dispatchEvent(new w.Event("change"));
+      click("start");
+      stop();
     });
     // Rebind after reload: earlier closures intentionally refer to the previous document.
     const nw = frame.contentWindow,

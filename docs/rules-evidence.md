@@ -12,3 +12,9 @@ Verified 2026-10-22 from the publisher Space Cowboys page https://www.spacecowbo
 - Two-player setup: four tokens per color, five gold, three nobles; four face-up plans each tier, 40/30/20 decks.
 
 Coverage: tests/engine.test.cjs exercises these seams plus 100 complete matches and information-boundary invariance. tests/browser.html exercises actual game controls and full matches. The original plan-cost profiles and patron mix are intentionally a new design; evidence supports core-rule correspondence, not full content or balance equivalence.
+
+## Four-player revision
+
+Rechecked the same primary publisher PDF on 2026-10-22: page 1 supplies seven tokens per color and five gold; page 2 four-player setup reveals five nobles. Turns proceed clockwise. The final-round section requires equal turns, ending with the last seat before the first-player marker. Compare all players by prestige, then fewest purchased developments, then share any remaining tie. Three-player tables use five colored tokens and four nobles, two-player tables use four colored tokens and three nobles; gold stays five.
+
+Tests now cover all four starting seats crossed with every possible triggering position, shared/unique winners across all four seats, 100 complete four-player matches, 50 three-player matches and 100 legacy two-player matches. AI observations mask all other players' blind reserves independently.
