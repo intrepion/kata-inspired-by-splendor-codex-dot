@@ -21,7 +21,7 @@ Each deterministic heuristic AI receives a sanitized observation: public holding
 - `npm run check`: JavaScript syntax checks.
 - `npm test`: deterministic edge cases, information-boundary checks and 250 complete simulated matches across two-, three-, and four-player tables with conservation assertions.
 - Open `tests/browser.html?autorun=1` on the preview: real browser controls, three complete four-player matches, repeated/interrupted actions across all AI seats, required choices, gold substitution, per-seat AI scheduling, legacy/new save restoration and narrow layouts.
-- CI installs Playwright only for testing and runs `node tests/ci-browser.cjs` with a local server. Runtime remains dependency-free.
+- CI installs Playwright only for testing and runs `node tests/ci-browser.cjs` with a local server. This also performs genuine top-level reloads for every AI seat, older saves, required choices, finished games and malformed-save recovery, using `tests/save-fixture.html`. All test saves use a separate storage key from real matches. Runtime remains dependency-free.
 
 Source boundaries: `engine.js` is pure rules and public-observation AI; `game.js` is rendering and interaction; `styles.css` is responsive presentation. `?test=1` enables browser acceptance hooks; normal play exposes no controller test hooks. See [specification](docs/spec.md), [glossary](CONTEXT.md), and [decision record](docs/adr/0001-local-rules-and-private-policy.md).
 

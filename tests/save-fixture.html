@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><title>Prism save/resume fixtures</title
+  ><style>
+    body {
+      background: #152b36;
+      color: #eee;
+      font: 16px system-ui;
+      padding: 30px;
+    }
+    button,
+    a {
+      display: inline-block;
+      margin: 8px;
+      padding: 16px;
+      background: #e5bf78;
+      color: #152b36;
+      border: 0;
+      border-radius: 8px;
+    }
+  </style>
+  <h1>Save/resume fixtures</h1>
+  <p>
+    These fixtures write only the isolated test save. Open the match to test a
+    fresh page load.
+  </p>
+  <div>
+    <button data-case="legacy">Legacy two-player save</button
+    ><button data-case="ai1">Aster’s pending turn</button
+    ><button data-case="ai2">Lumen’s pending turn</button
+    ><button data-case="ai3">Vesper’s pending turn</button
+    ><button data-case="return">Required token returns</button
+    ><button data-case="noble">Patron choice</button
+    ><button data-case="done">Shared result</button
+    ><button data-case="malformed">Malformed patron save</button>
+  </div>
+  <p id="status">Choose a fixture.</p>
+  <a href="../index.html?test=1">Open saved match →</a>
+  <script src="../engine.js"></script>
+  <script src="save-fixture.js"></script>
+</html>

@@ -1,13 +1,13 @@
-# Delivery validation
+# Delivery validation · four-player revision
 
-2026-10-22, on the requested Mac.
+2026-10-22, on the requested Mac. This supersedes the initial two-player acceptance record.
 
-- Primary base-game rules verified against the linked publisher PDF; see rules-evidence.md.
-- Ten deterministic rule/AI test groups passed, including 100 complete simulated matches across 5,316 completed turns. Every simulated transition checks resource/card conservation, score/bonus derivation, legal token counts and terminal state.
-- Native Chrome browser harness passed seven groups and 212 assertions: three complete matches through human-facing controls, required return and patron choices, elective gold payment, repeated inputs, restart cancellation, stale AI cancellation, AI-first/modal pause, save resume, 360/768px layout and touch-shaped events.
-- Native standalone play verified mouse gem collection, keyboard Enter collection of a suggested legal set, journal updates and a scheduled Automaton response. Visual inspection confirmed readable original geometric card art and market hierarchy.
-- Independent code-review skill: Standards axis found no hard violations and two heuristics (duplicated payment construction and compressed readability). Payment preview/submission now share one helper; sources were formatted. Spec axis found a blind-reserve render crash and missing no-action pass control; both fixed with browser regressions. Follow-up independent spec review found no remaining actionable defects.
-- The browser URL policy denied the optional direct-file native acceptance action. No alternate browser route was attempted; direct-file launch remains unverified. Loopback is the verified delivery path.
-- Battleship port 55602 remained available. Guess Who port 55603 had no listener in the initial inventory and did not respond at final probes; neither checkout, server nor tab was mutated.
+- Primary publisher rules rechecked: four players use seven tokens per color, five gold and five patrons; turns circle through seats and final-round scoring waits for equal turns. See rules-evidence.md.
+- Seventeen deterministic rule/AI test groups passed, including 250 complete matches: 100 four-player, 50 three-player and 100 legacy two-player games, totaling 19,454 completed turns. Transition invariants check resources, cards, bonuses, scores, token caps and termination. Every starter/trigger-seat combination and all-seat tie outcomes are covered.
+- Native Chrome browser harness passed nine groups, 248 assertions, including three complete four-player matches through human controls, all three scheduled AI turns, repeated input, restart cancellation, interrupted callbacks at every AI seat, token returns, patron choices, elective gold, hidden reserves, serialized save restoration, older-save migration, optional three-player setup and 360/768px layout/touch-shaped input.
+- Separate top-level browser fixtures test genuine full-page load/reload for all AI seats, legacy v1 two-player saves, pending returns, pending patron choices, shared results and malformed-save recovery. CI executes these using Playwright. Fixtures use isolated test storage; production matches retain the original storage key.
+- Native top-level Chrome acceptance confirmed a v1 save resumes with two seats and original supplies, Lumen/Vesper each play exactly once after an interrupted reload, and a malformed patron save returns to onboarding. A new game defaults to four distinct named artisans.
+- Installed Implement/Code Review workflow: independent standards/spec reviews identified malformed patron save validation. Fixed with one validator for both public and acquired patrons and negative regression cases. Both reviewers rechecked the fix and found no remaining actionable defects.
+- Existing detached preview remains PID 75287 at loopback port 55604. Battleship and Guess Who checkout files, tabs and servers were not changed. Both ports 55602 and 55603 were listening before this revision.
 
-The AI is heuristic, not an optimal solver. Plan costs and patron mix are original; these tests establish core-rule correspondence, not identical original-game content or balance. Synthesized pointer events supplement native desktop interaction; no physical touchscreen hardware test is claimed.
+The heuristic AI is approachable, not optimal. Card costs, patron mix and artwork remain original, with core-rule correspondence rather than identical balance. Physical touchscreen hardware is not tested. Direct-file acceptance remains unverified following the earlier browser URL-policy denial; this revision uses the verified loopback path only.

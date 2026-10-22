@@ -202,6 +202,16 @@
         Number.isInteger(c.points) &&
         c.points >= 0 &&
         validBag(c.cost);
+      const validPatron = (patron) =>
+        patron &&
+        typeof patron.id === "string" &&
+        typeof patron.name === "string" &&
+        patron.points === 3 &&
+        patron.cost &&
+        colors.every(
+          (color) =>
+            Number.isInteger(patron.cost[color]) && patron.cost[color] >= 0,
+        );
       if (
         !validBag(saved.bank) ||
         !Array.isArray(saved.decks) ||
@@ -228,12 +238,14 @@
             Array.isArray(p.reserved) &&
             p.reserved.length <= 3 &&
             p.reserved.every(validCard) &&
-            Array.isArray(p.patrons),
+            Array.isArray(p.patrons) &&
+            p.patrons.every(validPatron),
         )
       )
         return null;
       if (
         !Array.isArray(saved.patrons) ||
+        !saved.patrons.every(validPatron) ||
         !Array.isArray(saved.log) ||
         !saved.log.every((x) => typeof x === "string") ||
         !Array.isArray(saved.winners) ||

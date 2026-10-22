@@ -279,3 +279,20 @@ test("150 additional deterministic three/four-player complete matches conserve r
     }
   console.log("150 complete three/four-player matches;", turns, "turns");
 });
+
+test("malformed public or acquired patron saves are rejected before rendering", () => {
+  for (const bad of [
+    null,
+    {},
+    { ...E.patrons[0], cost: {} },
+    { ...E.patrons[0], points: 4 },
+    { ...E.patrons[0], cost: { ...E.patrons[0].cost, azure: -1 } },
+  ]) {
+    for (const acquired of [false, true]) {
+      const s = E.create(1);
+      if (acquired) s.players[1].patrons = [bad];
+      else s.patrons = [bad];
+      A.equal(E.restore(s), null);
+    }
+  }
+});

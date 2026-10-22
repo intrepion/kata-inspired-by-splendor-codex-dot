@@ -29,23 +29,7 @@ document.getElementById("run").onclick = async () => {
     throw Error(message);
   };
   async function reload() {
-    const query = "resume=" + Date.now();
-    const fresh = document.createElement("iframe");
-    fresh.id = "game";
-    fresh.title = "Game under test";
-    fresh.src = "../index.html?test=1&" + query;
-    frame.replaceWith(fresh);
-    frame = fresh;
-    await until(
-      () =>
-        frame.contentWindow.location.search.includes(query) &&
-        frame.contentWindow.PrismTest,
-      "Reload ready",
-    );
-    w = frame.contentWindow;
-    d = w.document;
-    E = w.Prism;
-    T = w.PrismTest;
+    T.restore();
   }
 
   const test = async (name, fn) => {
@@ -272,7 +256,7 @@ document.getElementById("run").onclick = async () => {
         );
       }
     });
-    await test("Four-player save/resume at each AI seat and pending human resolutions", async () => {
+    await test("Serialized save restoration at each AI seat and pending human resolutions", async () => {
       for (const seat of [1, 2, 3]) {
         const s = E.create(38, seat);
         T.load(s);
@@ -316,7 +300,7 @@ document.getElementById("run").onclick = async () => {
         "Shared result resumes",
       );
     });
-    await test("Older two-player saves resume safely and new games still default to four", async () => {
+    await test("Older save migration and new-game four-player defaults", async () => {
       let s = E.create(6, 1, 2);
       s.version = 1;
       T.load(s);

@@ -169,7 +169,7 @@
       .map((x) => `<li>${x}</li>`)
       .join("");
     $("round").textContent =
-      `ROUND ${Math.floor(state.turn / state.players.length) + 1} · ${state.turn} TURNS COMPLETED`;
+      `ROUND ${Math.floor(Math.max(0, state.turn - (done ? 1 : 0)) / state.players.length) + 1} · ${state.turn} TURNS COMPLETED`;
     $("hint").disabled = !isHuman();
     $("outcome").hidden = !done;
     if (done) {
@@ -469,22 +469,25 @@
       $("take").click();
     }
   });
-  try {
-    const raw = localStorage.getItem(storage),
-      saved = raw ? JSON.parse(raw) : null;
-    state = E.restore(saved);
-    if (raw) {
+  function restoreSavedMatch() {
+    try {
+      const raw = localStorage.getItem(storage),
+        saved = raw ? JSON.parse(raw) : null;
+      state = E.restore(saved);
+      if (raw) {
+        $("save-notice").hidden = false;
+        $("save-notice").textContent = state
+          ? `Resumed your ${state.players.length}-player match. New games default to four players.`
+          : "The saved match could not be restored. Start a fresh atelier below.";
+        if (state) save();
+      }
+    } catch {
       $("save-notice").hidden = false;
-      $("save-notice").textContent = state
-        ? `Resumed your ${state.players.length}-player match. New games default to four players.`
-        : "The saved match could not be restored. Start a fresh atelier below.";
-      if (state) save();
+      $("save-notice").textContent =
+        "The saved match could not be restored. Start a fresh atelier below.";
     }
-  } catch {
-    $("save-notice").hidden = false;
-    $("save-notice").textContent =
-      "The saved match could not be restored. Start a fresh atelier below.";
   }
+  restoreSavedMatch();
   render();
   synchronize();
   // Browser integration tests use the same transitions and dialogs, never a second rules engine.
@@ -503,6 +506,15 @@
         synchronize();
       },
       advance,
+      restore: () => {
+        epoch++;
+        clearTimeout(timer);
+        closeAll();
+        selection = [];
+        restoreSavedMatch();
+        render();
+        synchronize();
+      },
       stop: () => {
         epoch++;
         clearTimeout(timer);

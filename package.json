@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/engine.test.cjs",
-    "check": "node --check engine.js && node --check game.js && node --check tests/browser.js",
+    "check": "node --check engine.js && node --check game.js && node --check tests/browser.js && node --check tests/save-fixture.js && node --check tests/ci-browser.cjs",
     "start": "python3 server.py"
   }
 }
