@@ -1,1 +1,10 @@
-{"name":"prism-atelier","version":"1.0.0","private":true,"scripts":{"test":"node --test tests/engine.test.cjs","check":"node --check engine.js && node --check game.js && node --check tests/browser.js","start":"python3 server.py"}}
+{
+  "name": "prism-atelier",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/engine.test.cjs",
+    "check": "node --check engine.js && node --check game.js && node --check tests/browser.js",
+    "start": "python3 server.py"
+  }
+}
