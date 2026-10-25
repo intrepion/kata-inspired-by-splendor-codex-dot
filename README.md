@@ -1,5 +1,9 @@
 # Prism Atelier
 
+## Play online
+
+[Play Prism Atelier](https://intrepion.github.io/kata-inspired-by-splendor-codex-dot/) — free, playable in your browser.
+
 An original browser game of celestial workshops, gem collecting and quiet ambition, inspired by the core mechanics of base-game Splendor. Play against three fair Automata: Aster, Lumen and Vesper, build permanent discounts, and compete for sky patrons. Reach 15 prestige to begin the final round.
 
 ## Play locally
