@@ -30,3 +30,7 @@ Each deterministic heuristic AI receives a sanitized observation: public holding
 Source boundaries: `engine.js` is pure rules and public-observation AI; `game.js` is rendering and interaction; `styles.css` is responsive presentation. `?test=1` enables browser acceptance hooks; normal play exposes no controller test hooks. See [specification](docs/spec.md), [glossary](CONTEXT.md), and [decision record](docs/adr/0001-local-rules-and-private-policy.md).
 
 MIT licensed. The `.gitignore` includes the full GitHub main-branch Global/Linux.gitignore, Global/Windows.gitignore and Global/macOS.gitignore templates fetched on 2026-10-22, followed by local tooling exclusions.
+
+## Arcade metadata
+
+See [docs/arcade-metadata.md](docs/arcade-metadata.md) for the game-owned manifest and screenshot provenance.
