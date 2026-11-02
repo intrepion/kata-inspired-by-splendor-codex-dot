@@ -28,7 +28,7 @@ jobs:
         env:
           CAPTURE_OUTPUT: capture-output
         run: |
-          export GAME_SOURCE_COMMIT="$(git rev-parse HEAD^)"
+          export GAME_SOURCE_COMMIT="3d7093330d34182d5a862d1c7bea59b7ca9d3b2f"
           python3 -m http.server 4183 --bind 127.0.0.1 --directory capture-site > /tmp/atelier-http.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
