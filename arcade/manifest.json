@@ -1,6 +1,51 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "gameId": "kata-inspired-by-splendor-codex-dot",
   "playUrl": "https://intrepion.github.io/kata-inspired-by-splendor-codex-dot/",
-  "screenshots": []
+  "screenshots": [
+    {
+      "path": "arcade/screenshots/ci-20261102-01.jpg",
+      "sha256": "8e0dd7819c4835279cd650da135a193340a6ab26b9ad387b8c8e66938fabd596",
+      "alt": "Prism Atelier gameplay, view 1",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-01.png",
+        "sourceSha256": "a330afc9f385ffb541b9c4575aab29c3e19c0caf9d781fe47215950f5afb514d",
+        "captureCommit": "3d7093330d34182d5a862d1c7bea59b7ca9d3b2f",
+        "workflowRunId": "41381300830",
+        "inputHashes": {
+          "index.html": "2416e0f3db872c2d29664db1449a9252c6e1faa921166908a921193d6e32ec00",
+          "styles.css": "6471be5fe061dab97e686bd3ee909555af7877ba933b613a6b56699668481548",
+          "engine.js": "e1a075f5097befade1ba0e6555f710c8e436bf177e3f27e6c6607959e90146c8",
+          "game.js": "1d9ad7e54ec506d438677df42d3e9b1e04909be3fcd2b1e5ca00ec8d605225de",
+          "icon.svg": "91db41b5e6d58ce402a38361dbeb0b8526636bf95a0048db92da4ef19a8d20da"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "e9e3617615f4cc1fb1931670456add0967bf32480e1a61ce4309f6ce653fa3bc"
+      }
+    },
+    {
+      "path": "arcade/screenshots/ci-20261102-02.jpg",
+      "sha256": "8f896e76f8833a93588b9b838b5554428c792d1df3eb734758cad8f23a38fc9a",
+      "alt": "Prism Atelier gameplay, view 2",
+      "provenance": {
+        "kind": "ci_gameplay_capture",
+        "sourcePath": "arcade/capture-evidence/ci-20261102-02.png",
+        "sourceSha256": "1d6c0729216f309b21854fb40914157f8354cab4ad07ff17bfa06248d53c1644",
+        "captureCommit": "3d7093330d34182d5a862d1c7bea59b7ca9d3b2f",
+        "workflowRunId": "41381300830",
+        "inputHashes": {
+          "index.html": "2416e0f3db872c2d29664db1449a9252c6e1faa921166908a921193d6e32ec00",
+          "styles.css": "6471be5fe061dab97e686bd3ee909555af7877ba933b613a6b56699668481548",
+          "engine.js": "e1a075f5097befade1ba0e6555f710c8e436bf177e3f27e6c6607959e90146c8",
+          "game.js": "1d9ad7e54ec506d438677df42d3e9b1e04909be3fcd2b1e5ca00ec8d605225de",
+          "icon.svg": "91db41b5e6d58ce402a38361dbeb0b8526636bf95a0048db92da4ef19a8d20da"
+        },
+        "publishedFilesVerifiedAt": "2026-11-02T19:01:20Z",
+        "captureRecordPath": "arcade/capture-evidence/ci-20261102-record.json",
+        "captureRecordSha256": "e9e3617615f4cc1fb1931670456add0967bf32480e1a61ce4309f6ce653fa3bc"
+      }
+    }
+  ]
 }

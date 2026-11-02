@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "workflowCommit": "4d78a4d31803b1774a796954b77e6fe67196ed81",
+  "sourceCommit": "3d7093330d34182d5a862d1c7bea59b7ca9d3b2f",
+  "runId": "41381300830",
+  "url": "http://127.0.0.1:4183/",
+  "inputs": {
+    "index.html": "2416e0f3db872c2d29664db1449a9252c6e1faa921166908a921193d6e32ec00",
+    "styles.css": "6471be5fe061dab97e686bd3ee909555af7877ba933b613a6b56699668481548",
+    "engine.js": "e1a075f5097befade1ba0e6555f710c8e436bf177e3f27e6c6607959e90146c8",
+    "game.js": "1d9ad7e54ec506d438677df42d3e9b1e04909be3fcd2b1e5ca00ec8d605225de",
+    "icon.svg": "91db41b5e6d58ce402a38361dbeb0b8526636bf95a0048db92da4ef19a8d20da"
+  },
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "seed": 1989,
+  "screenshots": [
+    "atelier-01.png",
+    "atelier-02.png"
+  ]
+}
